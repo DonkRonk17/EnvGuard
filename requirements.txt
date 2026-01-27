@@ -1,0 +1,22 @@
+# EnvGuard - .env Configuration Validator & Conflict Detector
+# 
+# ZERO EXTERNAL DEPENDENCIES!
+# 
+# EnvGuard uses only Python standard library modules:
+# - argparse: CLI argument parsing
+# - json: JSON output formatting
+# - os, sys: System operations
+# - pathlib: Cross-platform path handling
+# - re: Regular expression matching
+# - socket: Network socket operations
+# - tempfile: Temporary file handling (tests only)
+# - typing: Type hints
+# - urllib: URL validation
+# - unittest: Testing framework
+#
+# No pip install required! Just run:
+#   python envguard.py --help
+#
+# For development/testing:
+# pytest>=7.0.0  # Optional: alternative test runner
+# mypy>=1.0.0    # Optional: static type checking

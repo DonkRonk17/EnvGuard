@@ -1,0 +1,280 @@
+================================================================================
+ENVGUARD CHEAT SHEET
+================================================================================
+
+EnvGuard - .env Configuration Validator & Conflict Detector
+Version: 1.0.0
+GitHub: https://github.com/DonkRonk17/EnvGuard
+
+================================================================================
+QUICK START
+================================================================================
+
+1. Clone:    git clone https://github.com/DonkRonk17/EnvGuard.git
+2. Navigate: cd EnvGuard
+3. Use:      python envguard.py --help
+
+No pip install needed - zero dependencies!
+
+================================================================================
+COMMON COMMANDS
+--------------------------------------------------------------------------------
+
+Find All .env Files:
+  envguard scan .
+  envguard scan ./my-project
+  envguard scan . --no-recursive
+
+View Environment Variables:
+  envguard audit .env
+  envguard audit .env --show-secrets
+  envguard audit .env --json
+
+Detect Conflicts:
+  envguard conflicts .
+  envguard conflicts ./my-project
+  envguard conflicts . --json
+
+Validate URLs:
+  envguard validate .env
+  envguard validate .env --timeout 10
+
+Check Schema:
+  envguard check .env --schema .env.example
+
+Detect Stale Values:
+  envguard stale .env
+  envguard stale .env.production --context production
+
+Update Values:
+  envguard fix .env --key API_URL --value "http://new.url"
+  envguard fix .env --key NEW_KEY --value "value" --create
+
+Compare Files:
+  envguard diff .env .env.production
+
+================================================================================
+CLI FLAGS & OPTIONS
+--------------------------------------------------------------------------------
+
+Global Options:
+  -h, --help         Show help message
+  --version          Show version
+  -v, --verbose      Enable verbose output
+  --json             Output results as JSON
+
+scan:
+  [path]             Directory to scan (default: current)
+  --no-recursive     Don't search subdirectories
+
+audit:
+  [env_file]         Path to .env file (required)
+  --show-secrets     Show sensitive values unmasked
+
+conflicts:
+  [path]             Project directory (default: current)
+
+validate:
+  [env_file]         Path to .env file (required)
+  --timeout N        Connection timeout in seconds (default: 5)
+
+check:
+  [env_file]         Path to .env file (required)
+  --schema FILE      Path to schema file (required)
+
+stale:
+  [env_file]         Path to .env file (required)
+  --context CTX      Environment context: development, production,
+                     staging, test, auto (default: auto)
+
+fix:
+  [env_file]         Path to .env file (required)
+  --key KEY          Variable key to update (required)
+  --value VALUE      New value (required)
+  --create           Create key if not exists
+
+diff:
+  [file1]            First .env file (required)
+  [file2]            Second .env file (required)
+
+================================================================================
+PYTHON API
+--------------------------------------------------------------------------------
+
+Import:
+  from envguard import EnvGuard, EnvFile
+
+Initialize:
+  guard = EnvGuard()
+  guard = EnvGuard(verbose=True)
+
+Scan for Files:
+  files = guard.scan(".")
+  files = guard.scan("./project", recursive=True)
+
+Audit File:
+  result = guard.audit(".env")
+  result = guard.audit(".env", mask_sensitive=False)
+
+Detect Conflicts:
+  conflicts = guard.detect_conflicts("./project")
+
+Validate URLs:
+  results = guard.validate_urls(".env", timeout=5)
+
+Check Schema:
+  result = guard.check_schema(".env", ".env.example")
+
+Detect Stale Values:
+  warnings = guard.detect_stale(".env", context="production")
+
+Update Value:
+  success = guard.update_value(".env", "KEY", "value", create=True)
+
+Compare Files:
+  result = guard.diff(".env", ".env.production")
+
+================================================================================
+DETECTED PATTERNS
+--------------------------------------------------------------------------------
+
+Sensitive Keys (Auto-Masked):
+  - *SECRET*
+  - *PASSWORD*
+  - *KEY*
+  - *TOKEN*
+  - *API*KEY*
+  - *PRIVATE*
+  - *CREDENTIAL*
+  - *AUTH*
+
+URL Keys (Validated):
+  - *URL*
+  - *URI*
+  - *ENDPOINT*
+  - *HOST*
+  - *SERVER*
+  - *API*
+  - *BASE*URL*
+
+Stale Patterns:
+  Pattern              | Severity | Contexts
+  ---------------------|----------|------------------
+  localhost, 127.0.0.1 | HIGH     | production, staging
+  192.168.x.x          | HIGH     | production, staging
+  example.com          | HIGH     | production, staging
+  YOUR_, CHANGE_ME     | HIGH     | all
+  Empty values         | WARNING  | all
+
+================================================================================
+EXIT CODES
+--------------------------------------------------------------------------------
+
+0 = Success / No issues found
+1 = Error / Issues detected
+
+Use in scripts:
+  envguard conflicts . && echo "No conflicts" || echo "Conflicts found"
+
+================================================================================
+INTEGRATION EXAMPLES
+--------------------------------------------------------------------------------
+
+Pre-Build Check:
+  envguard conflicts . && npm run build
+
+CI/CD Pipeline:
+  envguard check .env.prod --schema .env.example
+  envguard stale .env.prod --context production
+  envguard conflicts .
+
+With BuildEnvValidator:
+  from envguard import EnvGuard
+  from buildenvvalidator import BuildEnvValidator
+  
+  # First check .env, then build environment
+  guard = EnvGuard()
+  conflicts = guard.detect_conflicts(".")
+  if not conflicts:
+      validator = BuildEnvValidator()
+      validator.validate(".")
+
+With SynapseLink:
+  from envguard import EnvGuard
+  from synapselink import quick_send
+  
+  guard = EnvGuard()
+  conflicts = guard.detect_conflicts(".")
+  if conflicts:
+      quick_send("TEAM", "Env Conflicts!", str(conflicts), priority="HIGH")
+
+================================================================================
+FILE PATTERNS SCANNED
+--------------------------------------------------------------------------------
+
+.env Files:
+  .env
+  .env.local
+  .env.development
+  .env.production
+  .env.staging
+  .env.test
+  .env.example
+  .env.sample
+  .env.defaults
+
+Config Files (Conflict Detection):
+  config.ts, config.js, config.json
+  settings.py, settings.json
+  app.config.ts, app.config.js
+  constants.ts, constants.js
+  environment.ts, environment.js
+
+Excluded Directories:
+  node_modules/
+  .git/
+  __pycache__/
+  venv/, .venv/
+  dist/, build/
+
+================================================================================
+TROUBLESHOOTING
+--------------------------------------------------------------------------------
+
+"File not found":
+  -> Use 'scan' to find .env files: envguard scan .
+
+No conflicts detected:
+  -> Conflicts require hardcoded values in config files
+  -> process.env references are not conflicts (that's correct)
+
+URL validation timeout:
+  -> Increase timeout: --timeout 10
+  -> Check VPN for internal URLs
+
+Encoding errors:
+  -> EnvGuard tries UTF-8, falls back to Latin-1
+  -> Convert file to UTF-8 if issues persist
+
+================================================================================
+RESOURCES
+--------------------------------------------------------------------------------
+
+Documentation:   README.md
+Examples:        EXAMPLES.md
+Integration:     INTEGRATION_PLAN.md
+Quick Starts:    QUICK_START_GUIDES.md
+GitHub:          https://github.com/DonkRonk17/EnvGuard
+Issues:          https://github.com/DonkRonk17/EnvGuard/issues
+
+================================================================================
+CREDITS
+--------------------------------------------------------------------------------
+
+Built by:        Forge (Team Brain)
+For:             Logan Smith / Metaphy LLC
+Part of:         Beacon HQ / Team Brain Ecosystem
+Version:         1.0.0
+Date:            January 27, 2026
+
+================================================================================
