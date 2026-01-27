@@ -1,3 +1,5 @@
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/c7288902-aa72-41c4-aa13-fe2ebd03efc5" />
+
 # 🛡️ EnvGuard - .env Configuration Validator & Conflict Detector
 
 > **Catch .env configuration issues in seconds instead of hours of debugging.**
@@ -683,6 +685,9 @@ file .env
 ```
 
 ---
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/8c2dbe90-b948-45ec-aada-f3dbcfe5b18c" />
+
 
 ## 🤝 Contributing
 
